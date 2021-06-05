@@ -37,16 +37,6 @@ mayorSegun f a b
   | f a > f b = a
   | otherwise = b
 
--- Funciones para modificar un tiro
-cambiarVelocidadTiro :: (Number -> Number) -> Tiro -> Tiro
-cambiarVelocidadTiro comoCambiar tiro = tiro{velocidad = comoCambiar (velocidad tiro)}
-
-cambiarPrecisionTiro :: (Number -> Number) -> Tiro -> Tiro
-cambiarPrecisionTiro comoCambiar tiro = tiro{precision = comoCambiar (precision tiro)}
-
-cambiarAlturaTiro :: (Number -> Number) -> Tiro -> Tiro
-cambiarAlturaTiro comoCambiar tiro = tiro{altura = comoCambiar (altura tiro)}
-
 -- Tiros de ejemplo
 tiroTodo100 = UnTiro 100 100 100
 
@@ -76,17 +66,68 @@ golpe palo = palo.habilidad
 --pongo los parámetros en ese orden para poder definir la función con composición
 
 -- Punto 3 
+
+-- Funciones auxiliares
+modificarVelocidadTiroPorObstaculo :: (Number -> Number) -> TiroDespuesDeObstaculo -> TiroDespuesDeObstaculo
+modificarVelocidadTiroPorObstaculo modificacion (UnTiroDespuesDeObstaculo exito tiro) = UnTiroDespuesDeObstaculo exito tiro{velocidad = modificacion (velocidad tiro)}
+
+modificarPrecisionTiroPorObstaculo :: (Number -> Number) -> TiroDespuesDeObstaculo -> TiroDespuesDeObstaculo
+modificarPrecisionTiroPorObstaculo modificacion (UnTiroDespuesDeObstaculo exito tiro) = UnTiroDespuesDeObstaculo exito tiro{precision = modificacion (precision tiro)}
+
+modificarAlturaTiroPorObstaculo :: (Number -> Number) -> TiroDespuesDeObstaculo -> TiroDespuesDeObstaculo
+modificarAlturaTiroPorObstaculo modificacion (UnTiroDespuesDeObstaculo exito tiro) = UnTiroDespuesDeObstaculo exito tiro{altura = modificacion (altura tiro)}
+
+
 data TiroDespuesDeObstaculo = UnTiroDespuesDeObstaculo {supero :: Bool, tiroQueSale :: Tiro} deriving (Eq, Show)
 
 tiroDetenido = UnTiro 0 0 0
 
+tiroExitosoDetenido = UnTiroDespuesDeObstaculo {supero = True, tiroQueSale = tiroDetenido}
+
 tiroFallido = UnTiroDespuesDeObstaculo {supero = False, tiroQueSale = tiroDetenido}
 
 type Obstaculo = Tiro -> TiroDespuesDeObstaculo
+type CondicionDeSuperacion = Tiro -> Bool
+type EfectoObstaculo = TiroDespuesDeObstaculo -> TiroDespuesDeObstaculo
 
-{-
+superarObstaculo :: CondicionDeSuperacion -> Tiro -> TiroDespuesDeObstaculo
+superarObstaculo condicion tiro = UnTiroDespuesDeObstaculo (condicion tiro) tiro
+
+generarEfectoObstaculo :: EfectoObstaculo -> TiroDespuesDeObstaculo -> TiroDespuesDeObstaculo
+generarEfectoObstaculo efectoObstaculo (UnTiroDespuesDeObstaculo False _) = tiroFallido
+generarEfectoObstaculo efectoObstaculo tiroDespuesDeObstaculo = efectoObstaculo tiroDespuesDeObstaculo
+
+tiroAlRas tiro = altura tiro == 0
+
 tunelConRampita :: Obstaculo
-tunelConRampita tiro
-    | noSuperaTunelConRampita tiro = tiroFallido
-    | otherwise = tiro  
--}
+tunelConRampita = efectoTunelConRampita.superarObstaculo condicionTunelConRampita
+
+condicionTunelConRampita :: CondicionDeSuperacion
+condicionTunelConRampita tiro = (precision tiro > 90 && tiroAlRas tiro)
+
+efectoTunelConRampita :: EfectoObstaculo
+efectoTunelConRampita = generarEfectoObstaculo (modificarVelocidadTiroPorObstaculo (*2).modificarPrecisionTiroPorObstaculo (const 100).modificarAlturaTiroPorObstaculo (const 0))
+
+laguna :: Number -> Obstaculo
+laguna largo = efectoLaguna largo.superarObstaculo condicionLaguna
+
+condicionLaguna :: CondicionDeSuperacion
+condicionLaguna tiro = (velocidad tiro > 80 && altura tiro > 1 && altura tiro < 5)
+
+efectoLaguna :: Number -> EfectoObstaculo
+efectoLaguna largo = generarEfectoObstaculo (modificarAlturaTiroPorObstaculo (/largo))
+
+hoyo :: Obstaculo
+hoyo = efectoHoyo.superarObstaculo condicionHoyo
+
+condicionHoyo :: CondicionDeSuperacion
+condicionHoyo tiro = velocidad tiro > 5 && velocidad tiro < 20 && tiroAlRas tiro && precision tiro > 95
+
+efectoHoyo :: EfectoObstaculo
+efectoHoyo = generarEfectoObstaculo (const tiroExitosoDetenido)
+
+-- Punto 4
+--palosUtiles persona obstaculo = filter obstaculo palos 
+
+
+-- Punto 5
