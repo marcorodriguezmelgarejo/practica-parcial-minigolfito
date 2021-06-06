@@ -131,12 +131,16 @@ palosUtiles :: Jugador -> Obstaculo -> [Palo]
 palosUtiles persona obstaculo = filter (supero.obstaculo.flip golpe persona) palos
 
 -- Punto 4 b
+cuantosObstaculosConsecutivos :: [Obstaculo] -> Tiro -> Number
+cuantosObstaculosConsecutivos obstaculos tiro = length(takeWhile (superoObstaculo tiro) obstaculos) --podria dividir en subtareas
+
+superoObstaculo :: Tiro -> Obstaculo -> Bool
+superoObstaculo tiro obstaculo = (supero.obstaculo) tiro
 
 -- Punto 4 c
-{-
 paloMasUtil :: Jugador ->  [Obstaculo] -> Palo
 paloMasUtil persona obstaculos = maximoSegun (cuantosObstaculosConsecutivos obstaculos.flip golpe persona) palos
--}
+
 
 -- Punto 5
 resultadoDePrueba = [(bart, 15), (rafa, 20), (todd, 10)]
