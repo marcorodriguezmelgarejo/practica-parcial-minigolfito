@@ -126,8 +126,33 @@ condicionHoyo tiro = velocidad tiro > 5 && velocidad tiro < 20 && tiroAlRas tiro
 efectoHoyo :: EfectoObstaculo
 efectoHoyo = generarEfectoObstaculo (const tiroExitosoDetenido)
 
--- Punto 4
---palosUtiles persona obstaculo = filter obstaculo palos 
+-- Punto 4 a
+palosUtiles :: Jugador -> Obstaculo -> [Palo]
+palosUtiles persona obstaculo = filter (supero.obstaculo.flip golpe persona) palos
 
+-- Punto 4 b
+
+-- Punto 4 c
+{-
+paloMasUtil :: Jugador ->  [Obstaculo] -> Palo
+paloMasUtil persona obstaculos = maximoSegun (cuantosObstaculosConsecutivos obstaculos.flip golpe persona) palos
+-}
 
 -- Punto 5
+resultadoDePrueba = [(bart, 15), (rafa, 20), (todd, 10)]
+
+jugador = fst
+puntos = snd
+
+padresQuePierdenLaApuesta :: [(Jugador, Puntos)] -> [String]
+padresQuePierdenLaApuesta jugadores = map (padre.jugador) (niniosQueNoGanaron jugadores)
+
+niniosQueNoGanaron :: [(Jugador, Puntos)] -> [(Jugador, Puntos)]
+niniosQueNoGanaron jugadores = filter ((< puntosNinioQueGano jugadores).puntos) jugadores
+
+puntosNinioQueGano :: [(Jugador, Puntos)] -> Puntos
+puntosNinioQueGano jugadores = puntos (maximoSegun puntos jugadores)
+
+
+
+
