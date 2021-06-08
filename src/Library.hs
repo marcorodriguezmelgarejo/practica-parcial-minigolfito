@@ -131,8 +131,17 @@ palosUtiles :: Jugador -> Obstaculo -> [Palo]
 palosUtiles persona obstaculo = filter (supero.obstaculo.flip golpe persona) palos
 
 -- Punto 4 b
+ 
+--Con takeWhile
 cuantosObstaculosConsecutivos :: [Obstaculo] -> Tiro -> Number
 cuantosObstaculosConsecutivos obstaculos tiro = length(takeWhile (superoObstaculo tiro) obstaculos) --podria dividir en subtareas
+
+--Con recursión
+cuantosObstaculosConsecutivos' :: [Obstaculo] -> Tiro -> Number
+cuantosObstaculosConsecutivos' [] _ = 0
+cuantosObstaculosConsecutivos' (obstaculo:obstaculos) tiro
+  | superoObstaculo tiro obstaculo = 1 + cuantosObstaculosConsecutivos obstaculos (tiroQueSale (obstaculo tiro))
+  | otherwise = 0
 
 superoObstaculo :: Tiro -> Obstaculo -> Bool
 superoObstaculo tiro obstaculo = (supero.obstaculo) tiro
@@ -141,9 +150,8 @@ superoObstaculo tiro obstaculo = (supero.obstaculo) tiro
 paloMasUtil :: Jugador ->  [Obstaculo] -> Palo
 paloMasUtil persona obstaculos = maximoSegun (cuantosObstaculosConsecutivos obstaculos.flip golpe persona) palos
 
-
 -- Punto 5
-resultadoDePrueba = [(bart, 15), (rafa, 20), (todd, 10)]
+resultadoDePrueba = [(bart, 1), (rafa, 2), (todd, 3)]
 
 jugador = fst
 puntos = snd
@@ -158,5 +166,15 @@ puntosNinioQueGano :: [(Jugador, Puntos)] -> Puntos
 puntosNinioQueGano jugadores = puntos (maximoSegun puntos jugadores)
 
 
+{-
+--------------------------------------------------------------------------------------------
+1 bien
+2 bien
+3 me costó, ver nota tablet
+4a,c
+4b bien con recursividad (sacando una cosa que me confundi de colgado)
+4b bonus no sé si bien
+5 bien (nada que ver a la del video pero a mí me anda)
 
 
+-}
